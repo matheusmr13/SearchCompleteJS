@@ -22,9 +22,10 @@ function handleRequest(request, response) {
 	}
 	var url_parts = url.parse(request.url, true);
 	var textToSearch = url_parts.query.text;
+	var limit = url_parts.query.limit;
 	if (request.method == 'GET') {
 		var result = [];
-		for (var i = 0; i < obj.length; i++) {
+		for (var i = 0; i < obj.length && result.length < limit; i++) {
 			if (obj[i].name.indexOf(textToSearch) > -1) {
 				result.push(obj[i]);
 			}
@@ -33,7 +34,12 @@ function handleRequest(request, response) {
 		console.info(resultStr);
 		response.end(JSON.stringify(result));
 	} else {
-		console.info(request.params);
+		var body;
+		request.on('data', function (chunk) {
+    body += chunk;
+  });
+  request.on('end', function () {
+
 		textToSearch = request.params;
 		var maxId = 0;
 		for (var i =0; i<obj.length;i++) {
@@ -43,12 +49,10 @@ function handleRequest(request, response) {
 		}
 		obj.push({
 			id: maxId + 1,
-			name: textToSearch
+			name: body.split('=')[1]
 		});
-
-		console.info(JSON.stringify(obj));
-
 		response.end('ok');
+	});
 	}
 }
 

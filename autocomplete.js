@@ -1,16 +1,17 @@
 var Autocomplete = {};
 
+$.fn.size = $.fn.size || function () {
+	return $(this).length;
+};
 
-var html = '<div class="grid-100 grid-parent input-search">' +
-				'<button type="button" class="label-input open-search" tabIndex="-1">' +
-					'<img src="images/icones/lupa-3.svg" />' +
-				'</button>' +
-				'<input type="text" class="autocomplete-input" {{?it.required}}required{{?}}/>' +
-			'</div>' +
-			'<ul class="grid-100 grid-parent autocomplete-list{{?it.multiple}} multiple-list{{?}}">' +
-			'</ul>';
+
+var html = function (required, multiple) {
+	return '<div class="grid-100 grid-parent input-search"><input type="text" class="autocomplete-input" ' + (required ? 'required' : '') + '/></div>' +
+		'<ul class="grid-100 grid-parent autocomplete-list'+ (multiple ? ' multiple-list' : '') + '"></ul>';
+};
 var loadingLi = '<li class="list-loading"><img src="spinner.gif" /></li>';
 var emptyLi = '<li class="empty-list">No results.</li>';
+
 var createNewLi = function (properties, settings) {
 	if (settings.postUrl) {
 		return '<li class="create-new-item">Create new</li>';
@@ -18,6 +19,7 @@ var createNewLi = function (properties, settings) {
 		return '';
 	}
 };
+
 var keyCodes = {
 	ARROW_UP: 38,
 	ARROW_DOWN: 40,
@@ -133,10 +135,8 @@ var addSelectedItensToMultipleAutocomplete = function (properties, settings, val
 var transformIntoAutocomplete = function (autocompleteContainer) {
 	var settings = extractSettings(autocompleteContainer);
 
-	autocompleteContainer.html(doT.template(html, {
-		required: settings.inputRequired,
-		multiple: settings.multiple
-	}));
+	autocompleteContainer.html(html(settings.inputRequired, settings.multiple));
+
 	var properties = setupProperties(autocompleteContainer),
 		settings = extractSettings(autocompleteContainer);
 	defaultEvents(properties.autocompleteContainer, properties, settings);
@@ -221,12 +221,11 @@ var checkPressedKeyIsntSpecialCharacter = function (properties, event) {
 };
 
 var doRequest = function (url, settings) {
-	console.info(url, settings);
 	settings = settings || {};
 	settings.url = url;
-	if (settings.type != 'POST'){
-	settings.dataType = 'json';
-}
+	if (settings.type != 'POST') {
+		settings.dataType = 'json';
+	}
 	return $.ajax(settings);
 };
 
